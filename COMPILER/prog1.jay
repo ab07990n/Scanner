@@ -1,0 +1,7 @@
+main {
+    integer a;
+    a := 5;
+    while (true) {
+        a := a + 1;
+    }
+}
