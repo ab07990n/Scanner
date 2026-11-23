@@ -18,10 +18,6 @@ public class TokenStream {
     private char nextChar = ' ';
     private BufferedReader input;
 
-    public boolean isEoFile() {
-        return isEof;
-    }
-
     public TokenStream(String fileName) {
         try {
             input = new BufferedReader(new FileReader(fileName));
@@ -44,7 +40,7 @@ public class TokenStream {
         }
 
         // Skip comments beginning with //
-while (!isEof && nextChar == '/') {
+        while (!isEof && nextChar == '/') {
             nextChar = readChar();
 
             if (nextChar == '/') {
@@ -52,9 +48,6 @@ while (!isEof && nextChar == '/') {
                     nextChar = readChar();
                 }
                 skipWhiteSpace();
-                if (isEof) {
-                    return t;
-                }
             } else {
                 t.setType("Operator");
                 t.setValue("/");

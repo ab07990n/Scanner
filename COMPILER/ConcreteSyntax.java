@@ -44,8 +44,7 @@ public class ConcreteSyntax {
 	// Implementation of the Recursive Descent Parser
 
 	public Program program() {
-		// Program --> void main ( ) '{' Declarations Statements '}'
-		match("void");
+		// Program --> main ( ) '{' Declarations Statements '}'
 		match("main");
 		match("(");
 		match(")");
