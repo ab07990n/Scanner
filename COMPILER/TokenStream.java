@@ -44,7 +44,7 @@ public class TokenStream {
         }
 
         // Skip comments beginning with //
-        while (nextChar == '/') {
+while (!isEof && nextChar == '/') {
             nextChar = readChar();
 
             if (nextChar == '/') {
@@ -52,7 +52,6 @@ public class TokenStream {
                     nextChar = readChar();
                 }
                 skipWhiteSpace();
-
                 if (isEof) {
                     return t;
                 }
@@ -61,6 +60,10 @@ public class TokenStream {
                 t.setValue("/");
                 return t;
             }
+        }
+
+        if (isEof) {
+            return t;
         }
 
         // Operators, including two-character operators
@@ -74,10 +77,20 @@ public class TokenStream {
                  first == '=' || first == '!') && nextChar == '=') {
                 t.setValue(t.getValue() + nextChar);
                 nextChar = readChar();
+                return t;
             } else if ((first == '&' && nextChar == '&') ||
                        (first == '|' && nextChar == '|')) {
                 t.setValue(t.getValue() + nextChar);
                 nextChar = readChar();
+                return t;
+            } else if (first == '&' || first == '|') {
+                // Single '&' or '|' is not a valid JAY operator
+                t.setType("Other");
+                while (!isEof && !isEndOfToken(nextChar)) {
+                    t.setValue(t.getValue() + nextChar);
+                    nextChar = readChar();
+                }
+                return t;
             }
 
             return t;
@@ -95,7 +108,7 @@ public class TokenStream {
         if (isLetter(nextChar)) {
             t.setType("Identifier");
 
-            while (isLetter(nextChar) || isDigit(nextChar)) {
+            while (!isEof && (isLetter(nextChar) || isDigit(nextChar))) {
                 t.setValue(t.getValue() + nextChar);
                 nextChar = readChar();
             }
@@ -116,7 +129,7 @@ public class TokenStream {
         if (isDigit(nextChar)) {
             t.setType("Literal");
 
-            while (isDigit(nextChar)) {
+            while (!isEof && isDigit(nextChar)) {
                 t.setValue(t.getValue() + nextChar);
                 nextChar = readChar();
             }
@@ -124,6 +137,14 @@ public class TokenStream {
             if (isEndOfToken(nextChar)) {
                 return t;
             }
+
+            // Malformed token starting with digits (e.g., 3a)
+            t.setType("Other");
+            while (!isEof && !isEndOfToken(nextChar)) {
+                t.setValue(t.getValue() + nextChar);
+                nextChar = readChar();
+            }
+            return t;
         }
 
         // Unrecognized tokens
@@ -182,8 +203,7 @@ public class TokenStream {
     }
 
     private boolean isEndOfToken(char c) {
-        return isWhiteSpace(c) || isOperator(c)
-                || isSeparator(c) || isEof;
+        return isEof || isWhiteSpace(c) || isOperator(c) || isSeparator(c);
     }
 
     private void skipWhiteSpace() {
